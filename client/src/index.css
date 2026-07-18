@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/* 
+  Tailwind v4 custom theme tokens — registered as CSS custom properties.
+  These are read by Tailwind v4's engine (not by VS Code's CSS linter).
+  Warnings about @theme are false positives from the IDE.
+*/
+@theme {
+  --color-primary-50: var(--theme-50);
+  --color-primary-100: var(--theme-100);
+  --color-primary-500: var(--theme-500);
+  --color-primary-600: var(--theme-600);
+  --color-primary-700: var(--theme-700);
+  --color-dark-800: #1f2937;
+  --color-dark-900: #111827;
+  --color-bg-subtle: #f9fafb;
+}
+
+:root {
+  /* Default / HR Manager Theme (Emerald) */
+  --theme-50: #ecfdf5;
+  --theme-100: #d1fae5;
+  --theme-500: #10b981;
+  --theme-600: #059669;
+  --theme-700: #047857;
+}
+
+[data-theme="admin"] {
+  /* Super Admin Theme (Blue) */
+  --theme-50: #eff6ff;
+  --theme-100: #dbeafe;
+  --theme-500: #3b82f6;
+  --theme-600: #2563eb;
+  --theme-700: #1d4ed8;
+}
+
+[data-theme="employee"] {
+  /* Employee Theme (Slate) */
+  --theme-50: #f8fafc;
+  --theme-100: #f1f5f9;
+  --theme-500: #64748b;
+  --theme-600: #475569;
+  --theme-700: #334155;
+}
+
+/* Base styles in plain CSS — no @apply to avoid IDE warnings */
+body {
+  background-color: #f9fafb;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #10b981;
+}
+
+/* Dark Mode Overrides */
+html.dark body {
+  background-color: #111827; /* dark-900 */
+  color: #f9fafb;
+}
+
+html.dark .bg-white, html.dark .bg-gray-50 {
+  background-color: #1f2937 !important; /* dark-800 */
+  color: #f9fafb !important;
+}
+
+html.dark .bg-bg-subtle {
+  background-color: #111827 !important; /* dark-900 */
+}
+
+html.dark .text-dark-900, html.dark .text-gray-900, html.dark .text-gray-800 {
+  color: #f9fafb !important;
+}
+
+html.dark .text-gray-500, html.dark .text-gray-600, html.dark .text-gray-700 {
+  color: #9ca3af !important;
+}
+
+html.dark .border, html.dark .border-b, html.dark .border-t, html.dark .border-l, html.dark .border-r, html.dark .border-gray-200, html.dark .border-gray-300 {
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .divide-y > * + *, html.dark .divide-gray-200 > * + * {
+  border-color: #374151 !important;
+}
+
+html.dark input, html.dark select, html.dark textarea {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+  border-color: #4b5563 !important;
+}
+
+html.dark .hover\:bg-gray-50:hover, html.dark .hover\:bg-gray-100:hover {
+  background-color: #374151 !important;
+}

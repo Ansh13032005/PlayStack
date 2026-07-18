@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Uses the environment variables from the server/.env file
+    env_file:
+      - ./server/.env
+    networks:
+      - ems-network
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+    networks:
+      - ems-network
+    restart: unless-stopped
+
+networks:
+  ems-network:
+    driver: bridge
