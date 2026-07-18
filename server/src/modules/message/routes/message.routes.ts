@@ -9,6 +9,7 @@ const router = Router();
 router.use((req, res, next) => verifyTokenMiddleware(req, res, next));
 
 router.post('/send', uploadMessageAttachments, messageController.sendMessage);
+router.get('/recipients', messageController.getRecipients);
 router.get('/inbox', messageController.getInbox);
 router.get('/sent', messageController.getSentMessages);
 router.get('/unread-count', messageController.getUnreadCount);

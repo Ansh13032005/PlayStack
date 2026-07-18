@@ -34,9 +34,9 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
-          <Route path="/login/:role" element={<Login />} />
+          <Route path="/login/:role" element={<Navigate to="/login" replace />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/forgot-password/:role" element={<ForgotPassword />} />
+          <Route path="/forgot-password/:role" element={<Navigate to="/forgot-password" replace />} />
 
           {/* Protected Routes inside Layout */}
           <Route element={<DashboardLayout />}>

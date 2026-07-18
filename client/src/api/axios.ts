@@ -69,7 +69,14 @@ api.interceptors.response.use(
         
         const { accessToken, employee } = response.data.data;
         
-        useAuthStore.getState().login(employee, accessToken);
+        useAuthStore.getState().login(
+          {
+            userId: employee._id,
+            role: employee.role,
+            forcePasswordChange: employee.forcePasswordChange ?? false,
+          },
+          accessToken
+        );
         api.defaults.headers.common['Authorization'] = 'Bearer ' + accessToken;
         originalRequest.headers.Authorization = 'Bearer ' + accessToken;
         

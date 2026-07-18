@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/axios';
 import { Mail, Send, Loader2, User, Inbox, SendHorizontal, Search, X, Paperclip, FileText, Download } from 'lucide-react';
@@ -12,37 +12,50 @@ export function Messages() {
   // Compose State
   const [recipientId, setRecipientId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
 
-  // Fetch employees for Compose dropdown
-  const { data: employeesData } = useQuery({
-    queryKey: ['employees', 'all'],
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch employees for Compose dropdown (all roles)
+  const { data: employeesData, isLoading: isRecipientsLoading } = useQuery({
+    queryKey: ['messages', 'recipients', debouncedSearch],
     queryFn: async () => {
-      const res = await api.get('/employees', { params: { limit: 100 } });
-      return res.data.data.records;
+      const res = await api.get('/messages/recipients', {
+        params: { search: debouncedSearch || undefined, limit: 100 },
+      });
+      return res.data.data.employees as Array<{
+        _id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        employeeId?: string;
+      }>;
     },
-    enabled: activeTab === 'compose'
+    enabled: activeTab === 'compose' && showDropdown,
   });
 
-  const sortedEmployees = (employeesData || [])
-    .slice()
-    .sort((a: any, b: any) => a.firstName.localeCompare(b.firstName));
-
-  const filteredEmployees = sortedEmployees.filter((emp: any) => 
-    `${emp.firstName} ${emp.lastName} ${emp.email}`.toLowerCase().includes(searchQuery.toLowerCase())
+  const sortedEmployees = useMemo(
+    () => (employeesData || []).slice().sort((a, b) => a.firstName.localeCompare(b.firstName)),
+    [employeesData]
   );
 
-  // Group employees alphabetically by first letter of first name
-  const groupedEmployees = filteredEmployees.reduce((groups: Record<string, any[]>, emp: any) => {
-    const letter = emp.firstName.charAt(0).toUpperCase();
-    if (!groups[letter]) groups[letter] = [];
-    groups[letter].push(emp);
-    return groups;
-  }, {} as Record<string, any[]>);
-  const alphabetGroups = Object.keys(groupedEmployees).sort();
+  const groupedEmployees = useMemo(() => {
+    return sortedEmployees.reduce((groups: Record<string, typeof sortedEmployees>, emp) => {
+      const letter = emp.firstName.charAt(0).toUpperCase();
+      if (!groups[letter]) groups[letter] = [];
+      groups[letter].push(emp);
+      return groups;
+    }, {} as Record<string, typeof sortedEmployees>);
+  }, [sortedEmployees]);
+
+  const alphabetGroups = useMemo(() => Object.keys(groupedEmployees).sort(), [groupedEmployees]);
 
   // Fetch Inbox
   const { data: inboxData, isLoading: isInboxLoading } = useQuery({
@@ -179,7 +192,10 @@ export function Messages() {
                         type="text"
                         placeholder="Search employee by name or email..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setShowDropdown(true);
+                        }}
                         onFocus={() => setShowDropdown(true)}
                         onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
                         className="w-full bg-transparent border-none focus:outline-none text-sm text-dark-900 placeholder:text-gray-400"
@@ -187,7 +203,11 @@ export function Messages() {
                     </div>
                     {showDropdown && (
                       <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-52 overflow-y-auto">
-                        {filteredEmployees.length === 0 ? (
+                        {isRecipientsLoading ? (
+                          <div className="py-3 px-4 text-sm text-gray-500 text-center flex items-center justify-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" /> Searching...
+                          </div>
+                        ) : sortedEmployees.length === 0 ? (
                           <div className="py-3 px-4 text-sm text-gray-500 text-center">No employees found.</div>
                         ) : (
                           alphabetGroups.map((letter) => (
@@ -199,8 +219,9 @@ export function Messages() {
                                 <div
                                   key={emp._id}
                                   onMouseDown={() => {
-                                    setRecipientId(emp._id);
+                                    setRecipientId(String(emp._id));
                                     setSearchQuery('');
+                                    setDebouncedSearch('');
                                     setShowDropdown(false);
                                   }}
                                   className="py-2 px-3 hover:bg-primary-50 cursor-pointer flex flex-col border-b border-gray-50 last:border-0"

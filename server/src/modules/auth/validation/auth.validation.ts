@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const loginPortalSchema = z.enum(['employee', 'hr', 'admin']);
+
 // Zod v4 uses `error` instead of `required_error`/`invalid_type_error`
 export const loginSchema = z.object({
   email: z
@@ -8,6 +10,7 @@ export const loginSchema = z.object({
   password: z
     .string({ error: 'Password is required' })
     .min(1, 'Password is required'),
+  portal: loginPortalSchema.optional(),
 });
 
 export const forgotPasswordSchema = z.object({

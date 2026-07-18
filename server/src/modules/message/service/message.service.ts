@@ -77,6 +77,31 @@ export class MessageService {
   async getUnreadCount(employeeId: string) {
     return messageRepository.getUnreadCount(employeeId);
   }
+
+  /** Active employees for compose recipient picker (all authenticated roles). */
+  async getRecipients(userId: string, search?: string, limit = 200) {
+    const filter: Record<string, unknown> = {
+      isDeleted: false,
+      status: 'Active',
+      _id: { $ne: new Types.ObjectId(userId) },
+    };
+
+    if (search?.trim()) {
+      const term = search.trim();
+      filter['$or'] = [
+        { firstName: { $regex: term, $options: 'i' } },
+        { lastName: { $regex: term, $options: 'i' } },
+        { email: { $regex: term, $options: 'i' } },
+        { employeeId: { $regex: term, $options: 'i' } },
+      ];
+    }
+
+    return Employee.find(filter)
+      .select('firstName lastName email role employeeId profileImage')
+      .sort({ firstName: 1, lastName: 1 })
+      .limit(Math.min(limit, 500))
+      .lean();
+  }
 }
 
 export const messageService = new MessageService();

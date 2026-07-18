@@ -5,6 +5,8 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "seed": "tsx src/seed/index.ts",
+    "seed:reset": "tsx src/seed/index.ts --reset",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"

@@ -75,6 +75,17 @@ export class MessageController {
       next(error);
     }
   };
+
+  getRecipients = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const search = req.query.search as string | undefined;
+      const limit = parseInt(req.query.limit as string) || 100;
+      const recipients = await messageService.getRecipients(req.user!.userId, search, limit);
+      sendResponse(res, 200, true, 'Recipients fetched successfully', { employees: recipients });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export const messageController = new MessageController();

@@ -89,11 +89,34 @@ describe('AuthService', () => {
       const result = await service.login({
         email: 'user@company.com',
         password: 'Password123!',
+        portal: 'employee',
       });
 
       expect(result.accessToken).toBe('access-token');
       expect(result.refreshToken).toBe('refresh-token');
       expect(save).toHaveBeenCalled();
+    });
+
+    it('rejects login when role does not match portal', async () => {
+      vi.mocked(authRepository.findByEmail).mockResolvedValue({
+        _id: 'admin-1',
+        role: 'Super Admin',
+        status: 'Active',
+        isLocked: false,
+        loginAttempts: 0,
+        comparePassword: vi.fn().mockResolvedValue(true),
+        save: vi.fn(),
+      } as any);
+
+      await expect(
+        service.login({
+          email: 'admin@company.com',
+          password: 'Admin@123',
+          portal: 'employee',
+        })
+      ).rejects.toMatchObject({
+        statusCode: 403,
+      });
     });
   });
 });

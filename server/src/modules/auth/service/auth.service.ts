@@ -6,10 +6,23 @@ import { LoginDto, AuthTokens } from '../dto/auth.dto';
 import { sendOTPPasswordResetEmail } from '../../../utils/email';
 import { auditService } from '../../audit/service/audit.service';
 import { AuditAction } from '../../../models/AuditLog';
+import { Role } from '../../../models/Employee';
+
+const PORTAL_ROLE_MAP: Record<NonNullable<LoginDto['portal']>, Role> = {
+  employee: Role.EMPLOYEE,
+  hr: Role.HR_MANAGER,
+  admin: Role.SUPER_ADMIN,
+};
+
+const PORTAL_LABELS: Record<NonNullable<LoginDto['portal']>, string> = {
+  employee: 'Employee Portal',
+  hr: 'HR Management Portal',
+  admin: 'System Admin Portal',
+};
 
 export class AuthService {
   async login(data: LoginDto): Promise<AuthTokens> {
-    const { email, password } = data;
+    const { email, password, portal } = data;
 
     const employee = await authRepository.findByEmail(email);
     if (!employee) {
@@ -43,6 +56,16 @@ export class AuthService {
       employee.loginAttempts = 0;
       employee.lockUntil = undefined;
       await employee.save();
+    }
+
+    if (portal) {
+      const expectedRole = PORTAL_ROLE_MAP[portal];
+      if (employee.role !== expectedRole) {
+        throw new AppError(
+          `This account is not authorized for the ${PORTAL_LABELS[portal]}. Your role is "${employee.role}" — please sign in through the correct portal.`,
+          403
+        );
+      }
     }
 
     const accessToken = generateToken({

@@ -341,12 +341,12 @@ export function Employees() {
         </div>
         
         {/* Pagination Footer */}
-        {data && data.pagination?.totalPages > 1 && (
+        {data && data.pagination && data.pagination.total > 0 && (
           <div className="bg-gray-50 px-6 py-3 border-t border-gray-200 flex items-center justify-between shrink-0">
             <div className="text-sm text-gray-700">
-              Showing <span className="font-medium">{(page - 1) * 10 + 1}</span> to{' '}
-              <span className="font-medium">{Math.min(page * 10, data.pagination.totalDocs)}</span> of{' '}
-              <span className="font-medium">{data.pagination.totalDocs}</span> employees
+              Showing <span className="font-medium">{(page - 1) * data.pagination.limit + 1}</span> to{' '}
+              <span className="font-medium">{Math.min(page * data.pagination.limit, data.pagination.total)}</span> of{' '}
+              <span className="font-medium">{data.pagination.total}</span> employees
             </div>
             <div className="flex space-x-2">
               <button
@@ -358,7 +358,7 @@ export function Employees() {
               </button>
               <button
                 onClick={() => setPage(p => p + 1)}
-                disabled={page >= data.pagination?.totalPages}
+                disabled={page >= data.pagination.totalPages}
                 className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-dark-900 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Next

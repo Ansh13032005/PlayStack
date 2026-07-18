@@ -13,8 +13,9 @@ export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   }
 
   if (user && !allowedRoles.includes(user.role)) {
-    // If they are logged in but don't have access, send them to their profile
-    return <Navigate to="/profile" replace />;
+    // Redirect to the correct home for this role
+    const home = user.role === 'Employee' ? '/profile' : '/';
+    return <Navigate to={home} replace />;
   }
 
   return <Outlet />;
